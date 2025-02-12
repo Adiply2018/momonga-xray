@@ -14,6 +14,8 @@ import traceback
 import io
 
 class LobbyRevealer:
+    VERSION = "v1.1.0"
+    
     def __init__(self):
         self.client_port = None
         self.client_token = None
@@ -34,8 +36,8 @@ class LobbyRevealer:
 
     def setup_gui(self):
         self.root = tk.Tk()
-        self.root.title("MomongaXray")
-        self.root.geometry("360x160")
+        self.root.title(f"MomongaXray {self.VERSION}")
+        self.root.geometry("330x165")
         self.root.resizable(False, False)
 
         try:
@@ -58,9 +60,10 @@ class LobbyRevealer:
         self.phase_label = ttk.Label(self.root, text="Status: ", foreground="black", background="white")
         self.phase_label.place(x=10, y=30)
         
-        ttk.Button(self.root, text="Get Summoners", command=self.update_client_status).place(x=250, y=10)
-        ttk.Button(self.root, text="OP.GG", command=lambda: self.open_site("opgg")).place(x=250, y=40)
-        ttk.Button(self.root, text="DEEPLOL", command=lambda: self.open_site("deeplol")).place(x=250, y=70)
+        ttk.Button(self.root, text="Get Summoners", command=self.update_client_status).place(x=230, y=10)
+        ttk.Button(self.root, text="⟳", command=self.reset_all, width=3).place(x=195, y=10)
+        ttk.Button(self.root, text="OP.GG", command=lambda: self.open_site("opgg")).place(x=230, y=50)
+        ttk.Button(self.root, text="DEEPLOL", command=lambda: self.open_site("deeplol")).place(x=230, y=80)
         
         style = ttk.Style()
         style.configure("Danger.TButton", foreground="red", font=("Segoe UI", 9, "bold"))
@@ -70,7 +73,15 @@ class LobbyRevealer:
             style="Danger.TButton",
             command=self.confirm_dodge
         )
-        self.dodge_button.place(x=250, y=120)
+        self.dodge_button.place(x=230, y=130)
+        
+        #version_label = ttk.Label(
+        #    self.root, 
+        #    text=self.VERSION, 
+        #    foreground="gray",
+        #   font=("Segoe UI", 5)
+        #)
+        #version_label.place(x=300, y=150)
         
         self.output_text = tk.Text(self.root, width=28, height=7, bg='white', fg='black')
         self.output_text.place(x=10, y=60)
@@ -149,18 +160,15 @@ class LobbyRevealer:
                           if p["activePlatform"] == "windows" and 
                           f"{p['game_name']}#{p['game_tag']}" != self.current_summoner]
             
-            # Clear existing lists
             self.summoner_names.clear()
             self.opgg_names.clear()
             self.riot_ids.clear()
             
-            # Use sets to track unique values
             seen_display_names = set()
             
             for p in participants:
                 display_name = f"{p['game_name']}#{p['game_tag']}"
                 
-                # Only add if we haven't seen this display name before
                 if display_name not in seen_display_names:
                     seen_display_names.add(display_name)
                     self.summoner_names.append(display_name)
@@ -227,6 +235,22 @@ class LobbyRevealer:
             icon='warning'
         ):
             subprocess.run(['taskkill', '/f', '/im', 'LeagueClientUx.exe'])
+
+    def reset_all(self):
+        self.client_port = None
+        self.client_token = None
+        self.riot_port = None
+        self.riot_token = None
+        self.current_summoner = None
+        self.region = None
+        self.game_phase = None
+        self.summoner_names.clear()
+        self.opgg_names.clear()
+        self.riot_ids.clear()
+        
+        self.client_status_label.config(text="Client: Not Connected", foreground="black")
+        self.phase_label.config(text="Status: ")
+        self.output_text.delete(1.0, tk.END)
 
     def run(self):
         self.root.mainloop()
