@@ -149,15 +149,23 @@ class LobbyRevealer:
                           if p["activePlatform"] == "windows" and 
                           f"{p['game_name']}#{p['game_tag']}" != self.current_summoner]
             
+            # Clear existing lists
             self.summoner_names.clear()
             self.opgg_names.clear()
             self.riot_ids.clear()
             
+            # Use sets to track unique values
+            seen_display_names = set()
+            
             for p in participants:
                 display_name = f"{p['game_name']}#{p['game_tag']}"
-                self.summoner_names.append(display_name)
-                self.opgg_names.append(f"{p['game_name']}%23{p['game_tag']}")
-                self.riot_ids.append(f"{p['game_name']}-{p['game_tag']}")
+                
+                # Only add if we haven't seen this display name before
+                if display_name not in seen_display_names:
+                    seen_display_names.add(display_name)
+                    self.summoner_names.append(display_name)
+                    self.opgg_names.append(f"{p['game_name']}%23{p['game_tag']}")
+                    self.riot_ids.append(f"{p['game_name']}-{p['game_tag']}")
             
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, "\n".join(self.summoner_names))
